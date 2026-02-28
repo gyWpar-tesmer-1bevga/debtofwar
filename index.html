@@ -346,10 +346,97 @@ footer{
   0%{opacity:.12}15%{opacity:0}
 }
 
+/* ── CONTACT SECTION ──────────────────────── */
+.contact-section{
+  padding:0 36px 0;
+  margin-bottom:0;
+}
+.contact-inner{
+  border:1px solid var(--ash-mute);
+  background:var(--void2);
+  padding:36px 40px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:40px;
+  position:relative;
+  overflow:hidden;
+}
+.contact-inner::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--blood),var(--blood-dark),transparent);
+}
+.contact-left{flex:1}
+.contact-tag{
+  font-size:8px;letter-spacing:4px;color:var(--blood);
+  text-transform:uppercase;margin-bottom:10px;
+}
+.contact-headline{
+  font-family:var(--display);font-size:clamp(20px,3vw,32px);
+  letter-spacing:2px;color:var(--ash);line-height:1.2;margin-bottom:8px;
+}
+.contact-sub{
+  font-size:10px;color:var(--ash-dim);letter-spacing:1px;line-height:1.6;
+}
+.contact-right{
+  display:flex;flex-direction:column;align-items:flex-end;gap:12px;flex-shrink:0;
+}
+.ig-btn{
+  display:flex;align-items:center;gap:16px;
+  background:transparent;
+  border:1px solid #c13584;
+  padding:16px 24px;
+  text-decoration:none;
+  transition:all .2s;
+  position:relative;
+  overflow:hidden;
+  min-width:280px;
+}
+.ig-btn::before{
+  content:'';
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(193,53,132,0.08),rgba(131,58,180,0.08));
+  opacity:0;transition:opacity .2s;
+}
+.ig-btn:hover::before{opacity:1}
+.ig-btn:hover{
+  border-color:#e1306c;
+  box-shadow:0 0 30px rgba(193,53,132,0.25),0 0 60px rgba(193,53,132,0.1);
+  transform:translateY(-1px);
+}
+.ig-icon{
+  width:28px;height:28px;
+  color:#c13584;flex-shrink:0;
+  transition:color .2s;
+}
+.ig-btn:hover .ig-icon{color:#e1306c}
+.ig-text{display:flex;flex-direction:column;gap:3px;flex:1}
+.ig-handle{
+  font-family:var(--display);font-size:22px;letter-spacing:2px;
+  color:var(--ash);line-height:1;
+}
+.ig-label{
+  font-size:8px;letter-spacing:3px;color:var(--ash-dim);text-transform:uppercase;
+}
+.ig-arrow{
+  font-size:18px;color:var(--ash-dim);
+  transition:all .2s;
+}
+.ig-btn:hover .ig-arrow{color:#e1306c;transform:translate(2px,-2px)}
+.contact-note{
+  font-size:9px;color:var(--ash-mute);letter-spacing:.5px;
+  line-height:1.7;text-align:right;
+}
+
 /* responsive */
 @media(max-width:780px){
   header,.rule,.session-bar,.hero,.wars-section,.events-section,
-  .breakdown-section,.quote-wrap,.method,footer{padding-left:16px;padding-right:16px}
+  .breakdown-section,.quote-wrap,.method,.contact-section,footer{padding-left:16px;padding-right:16px}
+  .contact-inner{flex-direction:column;align-items:flex-start;padding:24px 20px}
+  .contact-right{align-items:flex-start;width:100%}
+  .ig-btn{min-width:unset;width:100%}
+  .contact-note{text-align:left}
   .rule{margin-left:16px;margin-right:16px}
   .hero-num{font-size:44px;min-width:unset}
   .wars-grid,.events-grid,.breakdown-grid{grid-template-columns:1fr}
@@ -478,6 +565,34 @@ footer{
 <div class="method">
   <span>★ Baseline rates: Watson Institute "Costs of War," SIPRI Military Expenditure Database, Kiel Institute Ukraine Support Tracker, UN OCHA, World Bank, UNDP. Per-second rates derived from annual estimates. Event-based cost spikes use CSIS/RAND/DoD weapon cost data. Figures are estimates ± significant uncertainty. Human cost sourced from ACLED & UN. This is not a political statement.</span>
   <span style="color:var(--blood);font-size:9px;letter-spacing:2px;flex-shrink:0">EDUCATIONAL USE</span>
+</div>
+
+<!-- CONTACT SECTION -->
+<div class="contact-section">
+  <div class="contact-inner">
+    <div class="contact-left">
+      <div class="contact-tag">BUILT BY A HUMAN</div>
+      <div class="contact-headline">Have feedback, data corrections,<br>or want to collaborate?</div>
+      <div class="contact-sub">This project is independent, non-partisan, and free forever.</div>
+    </div>
+    <div class="contact-right">
+      <a class="ig-btn" href="https://instagram.com/badal.lalwani2" target="_blank" rel="noopener">
+        <svg class="ig-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+          <circle cx="12" cy="12" r="4"/>
+          <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+        <div class="ig-text">
+          <span class="ig-handle">@badal.lalwani2</span>
+          <span class="ig-label">DM ON INSTAGRAM</span>
+        </div>
+        <span class="ig-arrow">↗</span>
+      </a>
+      <div class="contact-note">
+        Response within 24h · Open to media inquiries,<br>data corrections & collaboration
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- FOOTER -->
