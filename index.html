@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE DEBT OF WAR — Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;700&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --blood:#c0152a;--blood-dark:#7a0010;--blood-glow:rgba(192,21,42,0.45);
+  --blood2:rgba(192,21,42,0.12);
+  --ash:#e8e0d4;--ash-dim:#7a7068;--ash-mute:#2e2a26;
+  --void:#050404;--void2:#0c0908;--void3:#110d0c;
+  --gold:#c8a84b;--gold-dim:rgba(200,168,75,0.15);
+  --green:#1a7a3a;--green-bright:#00ff88;
+  --mono:'IBM Plex Mono',monospace;
+  --display:'Bebas Neue',sans-serif;
+  --serif:'Playfair Display',serif;
+  --rate-multiplier:1;
+}
+
+html,body{height:100%;background:var(--void);color:var(--ash);font-family:var(--mono);overflow-x:hidden}
+
+/* grain */
+body::after{content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9999;opacity:.55}
+
+/* ── BREAKING OVERLAY ─────────────────────── */
+#breaking-overlay{
+  position:fixed;inset:0;z-index:5000;
+  background:rgba(5,4,4,0.92);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .3s;
+}
+#breaking-overlay.show{opacity:1;pointer-events:all}
+.breaking-modal{
+  border:2px solid var(--blood);
+  box-shadow:0 0 60px var(--blood-glow),0 0 120px rgba(192,21,42,0.2);
+  background:var(--void2);
+  max-width:600px;width:90%;padding:36px;
+  position:relative;
+  animation:modalPop .4s ease;
+}
+@keyframes modalPop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.bm-tag{
+  font-size:9px;letter-spacing:4px;color:var(--blood);
+  margin-bottom:12px;display:flex;align-items:center;gap:10px;
+}
+.bm-dot{width:8px;height:8px;border-radius:50%;background:var(--blood);
+  box-shadow:0 0 10px var(--blood);animation:pulseDot 1s infinite}
+.bm-headline{font-family:var(--display);font-size:clamp(22px,4vw,36px);
+  letter-spacing:2px;color:var(--ash);line-height:1.1;margin-bottom:10px}
+.bm-cost{font-size:13px;color:var(--blood);margin-bottom:8px;font-weight:700}
+.bm-source{font-size:10px;color:var(--ash-dim);margin-bottom:20px}
+.bm-bar{height:2px;background:linear-gradient(90deg,var(--blood),transparent);
+  margin-bottom:20px}
+.bm-accel{font-size:11px;color:#ff8c00;letter-spacing:1px;margin-bottom:20px}
+.bm-close{
+  background:transparent;border:1px solid var(--ash-mute);
+  color:var(--ash-dim);font-family:var(--mono);font-size:10px;
+  letter-spacing:2px;padding:8px 20px;cursor:pointer;transition:all .15s;
+}
+.bm-close:hover{border-color:var(--blood);color:var(--blood)}
+
+/* ── ACCELERATION FLASH ───────────────────── */
+#accel-flash{
+  position:fixed;inset:0;z-index:4000;
+  background:var(--blood);opacity:0;pointer-events:none;
+  transition:opacity .05s;
+}
+
+/* ── HEADER ───────────────────────────────── */
+header{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:24px 36px 0;
+}
+.logo-block{}
+.logo{font-family:var(--display);font-size:clamp(24px,4vw,52px);
+  letter-spacing:5px;color:var(--ash);line-height:1}
+.logo-sub{font-size:9px;letter-spacing:3px;color:var(--ash-dim);margin-top:5px}
+
+.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.live-pill{display:flex;align-items:center;gap:8px;font-size:9px;
+  letter-spacing:3px;color:var(--blood);padding:5px 12px;
+  border:1px solid var(--blood-dark);background:rgba(192,21,42,0.06)}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--blood);
+  box-shadow:0 0 8px var(--blood);animation:pulseDot 1.2s infinite}
+.last-sync{font-size:8px;letter-spacing:1px;color:var(--ash-mute)}
+
+/* ── DIVIDER ──────────────────────────────── */
+.rule{height:1px;
+  background:linear-gradient(90deg,transparent,var(--blood-dark),var(--blood),var(--blood-dark),transparent);
+  margin:16px 36px;opacity:.6}
+
+/* ── SESSION BAR ──────────────────────────── */
+.session-bar{
+  display:flex;align-items:stretch;
+  border-top:1px solid var(--ash-mute);border-bottom:1px solid var(--ash-mute);
+}
+.sbar-item{
+  flex:1;padding:12px 20px;text-align:center;
+  border-right:1px solid var(--ash-mute);
+}
+.sbar-item:last-child{border-right:none}
+.sbar-label{font-size:7px;letter-spacing:3px;color:var(--ash-mute);
+  text-transform:uppercase;display:block;margin-bottom:4px}
+.sbar-value{font-size:clamp(13px,2vw,18px);font-weight:700;
+  font-variant-numeric:tabular-nums;letter-spacing:1px}
+.sbar-value.red{color:var(--blood);text-shadow:0 0 15px rgba(192,21,42,.4)}
+.sbar-value.gold{color:var(--gold)}
+.sbar-value.white{color:var(--ash)}
+
+/* ── TICKER ───────────────────────────────── */
+.ticker-wrap{
+  overflow:hidden;height:28px;display:flex;align-items:center;
+  background:#0a0706;
+  border-bottom:1px solid var(--blood-dark);
+}
+.ticker-label{
+  background:var(--blood);color:#fff;font-size:8px;letter-spacing:2px;
+  padding:0 12px;height:100%;display:flex;align-items:center;flex-shrink:0}
+.ticker-track{display:flex;animation:tickerScroll 55s linear infinite;white-space:nowrap}
+.ticker-item{font-size:9px;color:#ffb3bb;padding:0 28px;
+  display:flex;align-items:center;gap:8px}
+.ticker-sep{color:var(--blood);opacity:.4}
+
+/* ── HERO ─────────────────────────────────── */
+.hero{padding:32px 36px 8px;text-align:center;position:relative}
+.hero-eyebrow{font-size:8px;letter-spacing:4px;color:var(--ash-mute);
+  text-transform:uppercase;margin-bottom:10px}
+.hero-wrap{display:inline-flex;align-items:baseline;gap:4px;position:relative}
+.hero-currency{font-family:var(--display);font-size:clamp(28px,5vw,60px);
+  color:var(--blood-dark);letter-spacing:2px}
+.hero-num{
+  font-family:var(--display);
+  font-size:clamp(52px,9vw,120px);
+  color:var(--blood);line-height:1;
+  text-shadow:0 0 50px rgba(192,21,42,.5),0 0 100px rgba(192,21,42,.15);
+  font-variant-numeric:tabular-nums;
+  min-width:12ch;display:inline-block;text-align:right;
+}
+.hero-caption{font-size:9px;letter-spacing:3px;color:var(--ash-dim);margin-top:8px}
+.hero-rate{font-size:10px;color:#ff8c00;letter-spacing:2px;margin-top:4px}
+.bleed-line{width:2px;background:linear-gradient(to bottom,var(--blood),transparent);
+  height:32px;margin:0 auto;animation:bleedLine 1.8s ease-in-out infinite}
+
+/* acceleration banner */
+.accel-banner{
+  display:none;margin:0 36px 0;padding:10px 16px;
+  background:rgba(255,80,0,0.08);border:1px solid #ff5000;
+  font-size:10px;color:#ff8c00;letter-spacing:2px;text-align:center;
+}
+.accel-banner.show{display:block;animation:fadeIn .5s ease}
+.accel-banner span{color:#fff;font-weight:700}
+
+/* ── WARS GRID ────────────────────────────── */
+.wars-section{padding:0 36px}
+.section-label{
+  font-size:8px;letter-spacing:4px;color:var(--ash-mute);
+  text-transform:uppercase;margin-bottom:14px;
+  display:flex;align-items:center;gap:12px;
+}
+.section-label::after{content:'';flex:1;height:1px;background:var(--ash-mute)}
+
+.wars-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:2px;
+}
+.war-card{
+  background:var(--void2);border:1px solid var(--ash-mute);
+  padding:16px 18px;position:relative;overflow:hidden;
+  transition:background .2s;
+  animation:fadeUp .6s ease both;
+}
+.war-card:nth-child(1){animation-delay:.05s}
+.war-card:nth-child(2){animation-delay:.1s}
+.war-card:nth-child(3){animation-delay:.15s}
+.war-card:nth-child(4){animation-delay:.2s}
+.war-card:nth-child(5){animation-delay:.25s}
+.war-card:nth-child(6){animation-delay:.3s}
+.war-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--blood);box-shadow:2px 0 10px var(--blood-glow);
+  transform:scaleY(0);transform-origin:bottom;transition:transform .35s ease;
+}
+.war-card:hover::before{transform:scaleY(1)}
+.war-card:hover{background:var(--void3)}
+.wc-flag{font-size:20px;margin-bottom:5px;display:block}
+.wc-name{font-family:var(--display);font-size:18px;letter-spacing:2px;
+  color:var(--ash);margin-bottom:1px}
+.wc-region{font-size:7px;letter-spacing:2px;color:var(--ash-dim);
+  text-transform:uppercase;margin-bottom:12px}
+.wc-cost{font-family:var(--mono);font-size:20px;font-weight:700;
+  color:var(--blood);letter-spacing:1px;font-variant-numeric:tabular-nums;
+  margin-bottom:2px;text-shadow:0 0 15px rgba(192,21,42,.35)}
+.wc-rate{font-size:8px;letter-spacing:1px;color:var(--ash-dim);margin-bottom:12px}
+.wc-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ws{background:rgba(255,255,255,.02);border:1px solid var(--ash-mute);padding:6px 9px}
+.ws-label{font-size:7px;letter-spacing:1px;color:var(--ash-mute);display:block;margin-bottom:2px}
+.ws-val{font-size:12px;font-weight:700;color:var(--ash)}
+.ws-val.d{color:var(--blood)}.ws-val.g{color:var(--gold)}
+
+/* ── LIVE EVENTS FEED ─────────────────────── */
+.events-section{padding:24px 36px 0}
+.events-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:2px;
+  max-height:420px;overflow-y:auto;
+}
+.events-grid::-webkit-scrollbar{width:3px}
+.events-grid::-webkit-scrollbar-track{background:var(--void)}
+.events-grid::-webkit-scrollbar-thumb{background:var(--ash-mute)}
+
+.event-card{
+  background:var(--void2);border:1px solid var(--ash-mute);
+  padding:14px 16px;position:relative;overflow:hidden;
+  transition:background .15s;cursor:default;
+}
+.event-card:hover{background:var(--void3)}
+.event-card.high{border-left:3px solid var(--blood)}
+.event-card.medium{border-left:3px solid var(--gold)}
+.event-card.low{border-left:3px solid var(--ash-mute)}
+.event-card.is-new{
+  animation:newCardSlide .5s ease both;
+  box-shadow:0 0 20px rgba(192,21,42,.15);
+}
+@keyframes newCardSlide{
+  from{transform:translateX(-10px);opacity:0;box-shadow:0 0 30px var(--blood-glow)}
+  to{transform:translateX(0);opacity:1}
+}
+.ec-tag{
+  font-size:7px;letter-spacing:2px;margin-bottom:7px;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.ec-sev{
+  padding:2px 7px;font-size:7px;letter-spacing:1px;
+  border-radius:1px;
+}
+.ec-sev.high{background:rgba(192,21,42,.15);color:var(--blood);border:1px solid rgba(192,21,42,.3)}
+.ec-sev.medium{background:rgba(200,168,75,.12);color:var(--gold);border:1px solid rgba(200,168,75,.25)}
+.ec-sev.low{background:rgba(255,255,255,.03);color:var(--ash-mute);border:1px solid var(--ash-mute)}
+.ec-breaking{
+  background:var(--blood);color:#fff;
+  font-size:7px;letter-spacing:2px;padding:2px 7px;
+  animation:blinkBreaking 1s ease infinite;
+}
+@keyframes blinkBreaking{0%,100%{opacity:1}50%{opacity:.5}}
+.ec-headline{font-size:12px;font-weight:400;line-height:1.4;
+  color:var(--ash);margin-bottom:8px}
+.ec-meta{font-size:8px;color:var(--ash-dim);display:flex;
+  justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:4px}
+.ec-cost{font-size:10px;font-weight:700;color:var(--blood)}
+.ec-source{font-size:8px;color:var(--ash-mute)}
+.ec-time{font-size:8px;color:var(--ash-mute)}
+.ec-link{font-size:8px;color:var(--blood);text-decoration:none;
+  letter-spacing:1px;opacity:.7;transition:opacity .15s}
+.ec-link:hover{opacity:1}
+
+.no-events{
+  grid-column:1/-1;padding:30px;text-align:center;
+  font-size:10px;color:var(--ash-mute);letter-spacing:2px;
+}
+
+/* ── BREAKDOWNS ───────────────────────────── */
+.breakdown-section{padding:24px 36px}
+.breakdown-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px}
+.bc{background:var(--void2);border:1px solid var(--ash-mute);padding:18px 20px}
+.bc-title{font-size:8px;letter-spacing:3px;color:var(--ash-dim);
+  text-transform:uppercase;margin-bottom:14px;
+  display:flex;align-items:center;gap:10px}
+.bc-title::after{content:'';flex:1;height:1px;background:var(--ash-mute)}
+.bc-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.bc-name{font-size:9px;color:var(--ash-dim);min-width:110px}
+.bc-bar-bg{flex:1;height:3px;background:var(--ash-mute);overflow:hidden}
+.bc-bar-fill{height:100%;transition:width 1.2s ease}
+.bc-bar-fill.r{background:var(--blood);box-shadow:0 0 6px var(--blood-glow)}
+.bc-bar-fill.g{background:var(--gold)}
+.bc-bar-fill.d{background:var(--ash-mute)}
+.bc-pct{font-size:10px;font-weight:700;color:var(--ash);min-width:32px;text-align:right}
+
+/* ── QUOTE ────────────────────────────────── */
+.quote-wrap{
+  padding:20px 36px;
+  border-top:1px solid var(--ash-mute);border-bottom:1px solid var(--ash-mute);
+  display:flex;align-items:center;gap:24px;
+}
+.quote-text{font-family:var(--serif);font-style:italic;
+  font-size:14px;color:var(--ash-dim);line-height:1.6;flex:1;
+  transition:opacity .6s}
+.quote-attr{font-size:8px;letter-spacing:2px;color:var(--ash-mute);
+  flex-shrink:0;text-align:right;white-space:nowrap;
+  transition:opacity .6s}
+
+/* ── METHODOLOGY ──────────────────────────── */
+.method{
+  padding:14px 36px;font-size:8px;color:var(--ash-mute);
+  letter-spacing:.5px;line-height:1.8;
+  border-bottom:1px solid #150e0d;
+  display:flex;justify-content:space-between;gap:40px;align-items:center;
+}
+
+/* ── FOOTER ───────────────────────────────── */
+footer{
+  padding:18px 36px 28px;
+  display:flex;justify-content:space-between;align-items:center;
+  border-top:1px solid var(--ash-mute);
+}
+.footer-logo{font-family:var(--display);font-size:16px;
+  letter-spacing:4px;color:var(--ash-mute)}
+.footer-note{font-size:8px;color:var(--ash-mute);
+  letter-spacing:.5px;line-height:1.7;text-align:right}
+
+/* ── ANIMATIONS ───────────────────────────── */
+@keyframes pulseDot{
+  0%,100%{opacity:1;box-shadow:0 0 8px var(--blood)}
+  50%{opacity:.35;box-shadow:0 0 2px var(--blood)}
+}
+@keyframes bleedLine{
+  0%,100%{opacity:.8;height:32px}50%{opacity:.2;height:14px}
+}
+@keyframes tickerScroll{
+  0%{transform:translateX(0)}100%{transform:translateX(-50%)}
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes heroFlash{
+  0%{color:#fff;text-shadow:0 0 40px #fff,0 0 80px rgba(255,255,255,.3)}
+  100%{color:var(--blood);text-shadow:0 0 50px rgba(192,21,42,.5),0 0 100px rgba(192,21,42,.15)}
+}
+@keyframes screenBleed{
+  0%{opacity:.12}15%{opacity:0}
+}
+
+/* responsive */
+@media(max-width:780px){
+  header,.rule,.session-bar,.hero,.wars-section,.events-section,
+  .breakdown-section,.quote-wrap,.method,footer{padding-left:16px;padding-right:16px}
+  .rule{margin-left:16px;margin-right:16px}
+  .hero-num{font-size:44px;min-width:unset}
+  .wars-grid,.events-grid,.breakdown-grid{grid-template-columns:1fr}
+  .session-bar{flex-wrap:wrap}
+  .sbar-item{min-width:50%}
+  .method{flex-direction:column;gap:8px}
+  footer{flex-direction:column;gap:12px;text-align:center}
+  .footer-note{text-align:center}
+}
+</style>
+</head>
+<body>
+
+<!-- SCREEN BLEED (on breaking event) -->
+<div id="accel-flash"></div>
+
+<!-- BREAKING MODAL -->
+<div id="breaking-overlay">
+  <div class="breaking-modal">
+    <div class="bm-tag"><span class="bm-dot"></span>BREAKING EVENT DETECTED</div>
+    <div class="bm-bar"></div>
+    <div class="bm-headline" id="bm-headline">—</div>
+    <div class="bm-cost" id="bm-cost"></div>
+    <div class="bm-source" id="bm-source"></div>
+    <div class="bm-accel" id="bm-accel"></div>
+    <button class="bm-close" onclick="closeBreaking()">DISMISS ✕</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo-block">
+    <div class="logo">THE DEBT OF WAR</div>
+    <div class="logo-sub">Real-time human & financial cost of active conflicts</div>
+  </div>
+  <div class="header-right">
+    <div class="live-pill"><span class="live-dot"></span>LIVE FEED</div>
+    <div class="last-sync">Last sync: <span id="last-sync">—</span></div>
+  </div>
+</header>
+
+<div class="rule"></div>
+
+<!-- SESSION BAR -->
+<div class="session-bar">
+  <div class="sbar-item">
+    <span class="sbar-label">You've been here</span>
+    <span class="sbar-value white" id="s-time">00:00:00</span>
+  </div>
+  <div class="sbar-item">
+    <span class="sbar-label">Spent since you arrived</span>
+    <span class="sbar-value red" id="s-spent">$0</span>
+  </div>
+  <div class="sbar-item">
+    <span class="sbar-label">Lives lost since you arrived</span>
+    <span class="sbar-value red" id="s-lives">0.00</span>
+  </div>
+  <div class="sbar-item">
+    <span class="sbar-label">Breaking events today</span>
+    <span class="sbar-value gold" id="s-breaking">0</span>
+  </div>
+  <div class="sbar-item">
+    <span class="sbar-label">UTC</span>
+    <span class="sbar-value white" id="s-utc">—</span>
+  </div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-label">LIVE</div>
+  <div class="ticker-track" id="ticker-track"></div>
+</div>
+
+<!-- ACCELERATION BANNER -->
+<div class="accel-banner" id="accel-banner">
+  ⚡ RATE ACCELERATED — <span id="accel-reason">Major event detected</span> · Counter running at <span id="accel-mult">1×</span> normal speed
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">estimated total spent on active wars since 1 jan 2024</div>
+  <div class="hero-wrap">
+    <span class="hero-currency">$</span>
+    <span class="hero-num" id="hero-num">0</span>
+  </div>
+  <div class="hero-caption">All figures estimated from peer-reviewed conflict economics research · counting every second</div>
+  <div class="hero-rate" id="hero-rate">≈ $10,418/sec baseline</div>
+  <div class="bleed-line"></div>
+</div>
+
+<!-- WAR CARDS -->
+<div class="wars-section">
+  <div class="section-label">Active conflict cost meters</div>
+  <div class="wars-grid" id="wars-grid"></div>
+</div>
+
+<!-- LIVE EVENTS FEED -->
+<div class="events-section">
+  <div class="section-label">Live RSS feed — <span id="event-count" style="color:var(--blood)">0</span> events detected</div>
+  <div class="events-grid" id="events-grid">
+    <div class="no-events">Loading live feed…</div>
+  </div>
+</div>
+
+<!-- BREAKDOWNS -->
+<div class="breakdown-section">
+  <div class="breakdown-grid">
+    <div class="bc">
+      <div class="bc-title">Spending by Category</div>
+      <div id="spend-breakdown"></div>
+    </div>
+    <div class="bc">
+      <div class="bc-title">Cost by Region</div>
+      <div id="region-breakdown"></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUOTE -->
+<div class="quote-wrap">
+  <div class="quote-text" id="quote-text">"Every gun that is made, every warship launched, every rocket fired signifies, in the final sense, a theft from those who hunger and are not fed."</div>
+  <div class="quote-attr" id="quote-attr">— Dwight D. Eisenhower, 1953</div>
+</div>
+
+<!-- METHODOLOGY -->
+<div class="method">
+  <span>★ Baseline rates: Watson Institute "Costs of War," SIPRI Military Expenditure Database, Kiel Institute Ukraine Support Tracker, UN OCHA, World Bank, UNDP. Per-second rates derived from annual estimates. Event-based cost spikes use CSIS/RAND/DoD weapon cost data. Figures are estimates ± significant uncertainty. Human cost sourced from ACLED & UN. This is not a political statement.</span>
+  <span style="color:var(--blood);font-size:9px;letter-spacing:2px;flex-shrink:0">EDUCATIONAL USE</span>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">THE DEBT OF WAR</div>
+  <div class="footer-note">
+    Numbers never stop. Neither does the cost.<br>
+    Data refreshes every 30 minutes from live RSS feeds.
+  </div>
+</footer>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   THE DEBT OF WAR v2 — Live RSS Edition
+   ════════════════════════════════════════════════════════════ */
+
+// ── BASE WAR DATA ────────────────────────────────────────────
+const WARS = [
+  {id:'ukraine', flag:'🇺🇦', name:'UKRAINE WAR',      region:'EASTERN EUROPE',
+   ratePerSec:6975, startMs:new Date('2022-02-24T04:00:00Z').getTime(),
+   stats:{killed:'~500,000+',displaced:'14.6M',annualCost:'$220B/yr',aid:'$175B+'},
+   sources:'Watson Institute · SIPRI · Kiel'},
+  {id:'gaza',    flag:'🇵🇸', name:'GAZA CONFLICT',    region:'MIDDLE EAST',
+   ratePerSec:3125, startMs:new Date('2023-10-07T06:30:00Z').getTime(),
+   stats:{killed:'44,000+',displaced:'1.9M',annualCost:'$100B+',aid:'$3.4B'},
+   sources:'World Bank · UN OCHA'},
+  {id:'sudan',   flag:'🇸🇩', name:'SUDAN CIVIL WAR',  region:'NORTH AFRICA',
+   ratePerSec:399,  startMs:new Date('2023-04-15T09:00:00Z').getTime(),
+   stats:{killed:'150,000+',displaced:'10.7M',annualCost:'$12.6B/yr',aid:'$1.1B'},
+   sources:'IMF · UNHCR · ACLED'},
+  {id:'myanmar', flag:'🇲🇲', name:'MYANMAR WAR',      region:'SE ASIA',
+   ratePerSec:412,  startMs:new Date('2021-02-01T00:00:00Z').getTime(),
+   stats:{killed:'50,000+',displaced:'2.7M',annualCost:'$13B/yr',aid:'$0.5B'},
+   sources:'World Bank · ACLED'},
+  {id:'sahel',   flag:'🌍',  name:'SAHEL CONFLICTS',  region:'WEST AFRICA',
+   ratePerSec:254,  startMs:new Date('2012-01-01T00:00:00Z').getTime(),
+   stats:{killed:'25,000+',displaced:'4.2M',annualCost:'$8B/yr',aid:'$1.2B'},
+   sources:'OECD · UN OCHA'},
+  {id:'yemen',   flag:'🇾🇪', name:'YEMEN WAR',        region:'MIDDLE EAST',
+   ratePerSec:253,  startMs:new Date('2015-03-26T00:00:00Z').getTime(),
+   stats:{killed:'377,000+',displaced:'4.5M',annualCost:'$8B/yr',aid:'$2.1B'},
+   sources:'UNDP · Watson Institute'},
+];
+
+const BASE_RATE   = WARS.reduce((s,w) => s+w.ratePerSec, 0); // ~11,418/sec
+const LIVES_RATE  = 0.032; // deaths/sec across all conflicts
+const BASELINE_MS = new Date('2024-01-01T00:00:00Z').getTime();
+
+// ── ACCELERATION STATE ────────────────────────────────────────
+let rateMultiplier = 1;
+let accelReason    = '';
+let accelDecayTimer = null;
+
+function setAcceleration(mult, reason) {
+  rateMultiplier = mult;
+  accelReason    = reason;
+  document.getElementById('accel-banner').classList.add('show');
+  document.getElementById('accel-reason').textContent = reason;
+  document.getElementById('accel-mult').textContent   = mult + '×';
+  // decay back to 1× over 10 minutes
+  clearTimeout(accelDecayTimer);
+  accelDecayTimer = setTimeout(() => {
+    rateMultiplier = 1;
+    document.getElementById('accel-banner').classList.remove('show');
+  }, 10 * 60 * 1000);
+}
+
+// ── SESSION ───────────────────────────────────────────────────
+const SESSION_START = Date.now();
+let sessionSpent = 0;
+let sessionLives = 0;
+
+// ── FORMATTING ────────────────────────────────────────────────
+function fmtMoney(n) {
+  if (n>=1e12) return '$'+(n/1e12).toFixed(3)+'T';
+  if (n>=1e9)  return '$'+(n/1e9).toFixed(3)+'B';
+  if (n>=1e6)  return '$'+(n/1e6).toFixed(3)+'M';
+  if (n>=1e3)  return '$'+(n/1e3).toFixed(1)+'K';
+  return '$'+Math.floor(n).toLocaleString();
+}
+function fmtBig(n){return Math.floor(n).toLocaleString('en-US')}
+function fmtDur(ms){
+  const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;
+}
+function fmtUTC(){return new Date().toUTCString().slice(17,25)+' UTC'}
+function timeAgo(iso){
+  const diff=(Date.now()-new Date(iso).getTime())/1000;
+  if(diff<60)  return Math.floor(diff)+'s ago';
+  if(diff<3600)return Math.floor(diff/60)+'m ago';
+  return Math.floor(diff/3600)+'h ago';
+}
+
+// ── SOUND ENGINE (Web Audio API — no files needed) ────────────
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function ensureAudio(){
+  if(!audioCtx) audioCtx = new AudioCtx();
+  if(audioCtx.state==='suspended') audioCtx.resume();
+}
+
+function playBreakingAlert(){
+  try{
+    ensureAudio();
+    // Low warning tone sequence
+    [120, 160, 120, 200].forEach((freq, i) => {
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.connect(g); g.connect(audioCtx.destination);
+      o.type = 'sawtooth';
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0, audioCtx.currentTime + i*0.18);
+      g.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + i*0.18 + 0.04);
+      g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + i*0.18 + 0.15);
+      o.start(audioCtx.currentTime + i*0.18);
+      o.stop(audioCtx.currentTime + i*0.18 + 0.2);
+    });
+  }catch(e){}
+}
+
+function playTickSound(){
+  try{
+    ensureAudio();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    o.frequency.value = 440;
+    o.type = 'square';
+    g.gain.setValueAtTime(0.015, audioCtx.currentTime);
+    g.gain.linearRampToValueAtTime(0, audioCtx.currentTime+0.04);
+    o.start(); o.stop(audioCtx.currentTime+0.05);
+  }catch(e){}
+}
+
+// ── SCREEN FLASH ──────────────────────────────────────────────
+function triggerScreenFlash(){
+  const el = document.getElementById('accel-flash');
+  el.style.opacity = '0.14';
+  el.style.transition = 'opacity 0.05s';
+  setTimeout(()=>{ el.style.transition='opacity 0.6s'; el.style.opacity='0'; }, 60);
+}
+
+// ── HERO FLASH ────────────────────────────────────────────────
+let prevHeroThousand = 0;
+function flashHero(){
+  const el = document.getElementById('hero-num');
+  el.style.animation='none';
+  void el.offsetWidth;
+  el.style.animation='heroFlash 0.4s ease';
+}
+
+// ── BREAKING MODAL ────────────────────────────────────────────
+let shownBreaking = new Set();
+
+function showBreakingModal(event){
+  if(shownBreaking.has(event.id)) return;
+  shownBreaking.add(event.id);
+
+  document.getElementById('bm-headline').textContent = event.title;
+  document.getElementById('bm-source').textContent   = `${event.source} · ${timeAgo(event.timestamp)}`;
+
+  const costStr = event.cost_usd > 0
+    ? `Estimated operational cost: ${fmtMoney(event.cost_usd)} · ${event.cost_label||''}`
+    : 'Cost estimate pending assessment';
+  document.getElementById('bm-cost').textContent  = costStr;
+
+  const mult = event.cost_usd > 500_000_000 ? 4 :
+               event.cost_usd > 50_000_000  ? 3 :
+               event.cost_usd > 1_000_000   ? 2 : 1.5;
+  document.getElementById('bm-accel').textContent =
+    `⚡ Counter rate increasing to ${mult}× — major conflict expenditure detected`;
+
+  document.getElementById('breaking-overlay').classList.add('show');
+
+  setAcceleration(mult, event.title.slice(0,60)+'…');
+  triggerScreenFlash();
+  playBreakingAlert();
+}
+
+function closeBreaking(){
+  document.getElementById('breaking-overlay').classList.remove('show');
+}
+
+// ── BUILD WAR CARDS ───────────────────────────────────────────
+function buildWarCards(){
+  document.getElementById('wars-grid').innerHTML = WARS.map(w=>`
+    <div class="war-card">
+      <span class="wc-flag">${w.flag}</span>
+      <div class="wc-name">${w.name}</div>
+      <div class="wc-region">${w.region}</div>
+      <div class="wc-cost" id="wc-${w.id}">$0</div>
+      <div class="wc-rate">≈ $${w.ratePerSec.toLocaleString()}/sec baseline</div>
+      <div class="wc-stats">
+        <div class="ws"><span class="ws-label">Est. Killed</span><span class="ws-val d">${w.stats.killed}</span></div>
+        <div class="ws"><span class="ws-label">Displaced</span><span class="ws-val">${w.stats.displaced}</span></div>
+        <div class="ws"><span class="ws-label">Annual Cost</span><span class="ws-val g">${w.stats.annualCost}</span></div>
+        <div class="ws"><span class="ws-label">Aid Given</span><span class="ws-val">${w.stats.aid}</span></div>
+      </div>
+    </div>`).join('');
+}
+
+// ── BUILD BREAKDOWNS ──────────────────────────────────────────
+const SPEND = [
+  {n:'Direct military ops',p:48,t:'r'},{n:'Weapons & munitions',p:22,t:'r'},
+  {n:'Reconstruction',p:14,t:'g'},{n:'Humanitarian aid',p:9,t:'d'},{n:'Refugee services',p:7,t:'d'},
+];
+const REGIONS = [
+  {n:'Eastern Europe',p:62,t:'r'},{n:'Middle East',p:27,t:'r'},
+  {n:'North Africa',p:6,t:'g'},{n:'SE Asia',p:3,t:'d'},{n:'West Africa',p:2,t:'d'},
+];
+
+function buildBreakdown(elId, data){
+  document.getElementById(elId).innerHTML = data.map(b=>`
+    <div class="bc-row">
+      <span class="bc-name">${b.n}</span>
+      <div class="bc-bar-bg"><div class="bc-bar-fill ${b.t}" style="width:${b.p}%"></div></div>
+      <span class="bc-pct">${b.p}%</span>
+    </div>`).join('');
+}
+
+// ── TICKER ────────────────────────────────────────────────────
+const STATIC_TICKERS = [
+  "Ukraine war: $220B+ annually","Gaza: $100B+ reconstruction needed",
+  "1 Tomahawk cruise missile: $2M","1 Patriot interceptor: $4M",
+  "1 F-35 sortie: ~$36,000/hr","Global military spend 2023: $2.44 TRILLION",
+  "Sudan: 150,000+ dead since April 2023","Yemen: 377,000+ conflict deaths since 2015",
+  "Ukraine: 14.6M displaced","Gaza: 1.9M displaced — 85% of population",
+  "1 HIMARS rocket: $100,000","1 Abrams tank: $10M",
+  "Myanmar: Economy −50% since 2021 coup","Sahel: 4.2M displaced",
+];
+
+function buildTicker(events){
+  const dynamicItems = (events||[])
+    .filter(e=>e.severity==='high')
+    .slice(0,8)
+    .map(e=>e.title.slice(0,80));
+  const all = [...dynamicItems, ...STATIC_TICKERS];
+  const doubled = [...all,...all];
+  document.getElementById('ticker-track').innerHTML =
+    doubled.map(t=>`<span class="ticker-item">${t}<span class="ticker-sep"> ◆ </span></span>`).join('');
+}
+
+// ── RENDER EVENTS FEED ────────────────────────────────────────
+function renderEvents(events){
+  const grid = document.getElementById('events-grid');
+  document.getElementById('event-count').textContent = events.length;
+
+  if(!events||!events.length){
+    grid.innerHTML='<div class="no-events">No conflict events detected in last 72h — feed may be loading</div>';
+    return;
+  }
+
+  grid.innerHTML = events.slice(0,40).map(e=>`
+    <div class="event-card ${e.severity}${e.is_new?' is-new':''}">
+      <div class="ec-tag">
+        <span class="ec-sev ${e.severity}">${e.severity.toUpperCase()}</span>
+        ${e.is_breaking?'<span class="ec-breaking">BREAKING</span>':''}
+        <span class="ec-source">${e.source}</span>
+      </div>
+      <div class="ec-headline">${esc(e.title)}</div>
+      <div class="ec-meta">
+        <span class="ec-cost">${e.cost_usd>0?fmtMoney(e.cost_usd)+' est.':''}</span>
+        <span class="ec-time">${timeAgo(e.timestamp)}</span>
+        ${e.url?`<a class="ec-link" href="${e.url}" target="_blank" rel="noopener">↗ SOURCE</a>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function esc(s){
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── QUOTES ────────────────────────────────────────────────────
+const QUOTES = [
+  {t:"Every gun that is made, every warship launched, every rocket fired signifies, in the final sense, a theft from those who hunger and are not fed.",a:"— Dwight D. Eisenhower, 1953"},
+  {t:"In war, the first casualty is truth — and the last is the treasury.",a:"— paraphrase, Aeschylus"},
+  {t:"War is a racket. It always has been… a few profit, and the many pay.",a:"— General Smedley Butler"},
+  {t:"The money spent on one nuclear weapon could feed a city of a million people for a year.",a:"— ICAN, 2021"},
+  {t:"Wars are not paid for in wartime; the bill comes later.",a:"— Benjamin Franklin"},
+  {t:"The cost of one modern heavy bomber: a modern brick school in more than 30 cities.",a:"— Eisenhower, 1953"},
+];
+let qIdx=0;
+function rotateQuote(){
+  qIdx=(qIdx+1)%QUOTES.length;
+  const qt=document.getElementById('quote-text');
+  const qa=document.getElementById('quote-attr');
+  qt.style.opacity='0'; qa.style.opacity='0';
+  setTimeout(()=>{
+    qt.textContent=QUOTES[qIdx].t; qa.textContent=QUOTES[qIdx].a;
+    qt.style.transition='opacity 1s'; qa.style.transition='opacity 1s';
+    qt.style.opacity='1'; qa.style.opacity='1';
+  },600);
+}
+
+// ── LIVE DATA POLLING ─────────────────────────────────────────
+let liveEvents      = [];
+let metaData        = {};
+let lastEventIds    = new Set();
+let extraCostToday  = 0;
+
+async function fetchData(){
+  try{
+    const [evRes, metaRes] = await Promise.all([
+      fetch('data/events.json?_='+Date.now()),
+      fetch('data/meta.json?_='+Date.now()),
+    ]);
+    if(evRes.ok){
+      const events = await evRes.json();
+      const newBreaking = events.filter(e=>e.is_breaking && !lastEventIds.has(e.id));
+      // Show modal for first new breaking event
+      if(newBreaking.length>0) showBreakingModal(newBreaking[0]);
+      lastEventIds = new Set(events.map(e=>e.id));
+      liveEvents = events;
+      renderEvents(events);
+      buildTicker(events);
+    }
+    if(metaRes.ok){
+      metaData = await metaRes.json();
+      extraCostToday = metaData.today_extra_cost||0;
+      document.getElementById('s-breaking').textContent = metaData.breaking_count||0;
+      document.getElementById('last-sync').textContent =
+        metaData.last_updated
+          ? new Date(metaData.last_updated).toUTCString().slice(17,25)+' UTC'
+          : 'just now';
+    }
+  }catch(e){
+    // data not yet available (local dev) — use static ticker
+    buildTicker([]);
+  }
+}
+
+// Poll every 60 seconds
+fetchData();
+setInterval(fetchData, 60_000);
+
+// ── BASE COST ENGINE ──────────────────────────────────────────
+function baseTotalSpent(){
+  const secs = (Date.now()-BASELINE_MS)/1000;
+  return secs*BASE_RATE + extraCostToday;
+}
+function warSpent(w){
+  const secs = (Date.now()-Math.max(w.startMs,BASELINE_MS))/1000;
+  return secs*w.ratePerSec;
+}
+
+// ── MAIN TICK ─────────────────────────────────────────────────
+const FPS      = 30;
+const DT       = 1/FPS;
+let accumulated = 0; // accumulated cost this session (for session counter)
+let accumLives  = 0;
+
+function tick(){
+  const effectiveRate = BASE_RATE * rateMultiplier;
+
+  accumulated  += effectiveRate * DT;
+  accumLives   += LIVES_RATE    * DT;
+  sessionSpent  = accumulated;
+  sessionLives  = accumLives;
+
+  // Hero
+  const total = baseTotalSpent() * rateMultiplier;
+  const heroThousand = Math.floor(total/1000);
+  if(heroThousand !== prevHeroThousand){
+    flashHero();
+    if(rateMultiplier > 1) playTickSound();
+    prevHeroThousand = heroThousand;
+  }
+  document.getElementById('hero-num').textContent = fmtBig(total);
+  document.getElementById('hero-rate').textContent =
+    `≈ $${Math.round(effectiveRate).toLocaleString()}/sec${rateMultiplier>1?' ⚡ ACCELERATED':''}`;
+
+  // Session
+  document.getElementById('s-time').textContent    = fmtDur(Date.now()-SESSION_START);
+  document.getElementById('s-spent').textContent   = fmtMoney(sessionSpent);
+  document.getElementById('s-lives').textContent   = accumLives.toFixed(2);
+  document.getElementById('s-utc').textContent     = fmtUTC();
+
+  // War cards
+  WARS.forEach(w=>{
+    const el = document.getElementById('wc-'+w.id);
+    if(el) el.textContent = fmtMoney(warSpent(w)*rateMultiplier);
+  });
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+buildWarCards();
+buildBreakdown('spend-breakdown', SPEND);
+buildBreakdown('region-breakdown', REGIONS);
+buildTicker([]);
+
+setInterval(tick, 1000/FPS);
+setInterval(rotateQuote, 9000);
+tick();
+
+// Enable audio on first interaction
+document.addEventListener('click', ()=>{ try{ensureAudio()}catch(e){} }, {once:true});
+document.addEventListener('keydown', ()=>{ try{ensureAudio()}catch(e){} }, {once:true});
+</script>
+</body>
+</html>
