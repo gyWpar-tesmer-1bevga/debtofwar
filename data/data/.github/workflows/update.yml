@@ -1,0 +1,97 @@
+name: Update War Feed
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run ingestion pipeline
+        run: python fetch_events.py
+
+      - name: Commit data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git diff --staged --quiet || (git commit -m "feed: $(date -u +%Y-%m-%dT%H:%M:%SZ)" && git push)
+```
+
+**4.** Click **"Commit changes"** → **"Commit changes"**
+
+---
+
+## PART 4 — Turn on GitHub Pages
+
+This is what makes your site actually visible on the internet.
+
+**1.** You're on your repo page. Click **"Settings"** tab (top of the page, with a gear icon)
+
+**2.** In the left sidebar, scroll down and click **"Pages"**
+
+**3.** Under **"Source"** — click the dropdown that says **"None"** → select **"Deploy from a branch"**
+
+**4.** Under **"Branch"** — click the dropdown that says **"None"** → select **"main"**
+
+**5.** Leave the folder as **"/ (root)"**
+
+**6.** Click **"Save"**
+
+**7.** Wait 2 minutes. Refresh the page.
+
+**8.** A green box will appear saying:**
+```
+Your site is live at https://YOURUSERNAME.github.io/debt-of-war
+```
+
+**Click that link. Your site is on the internet. ✓**
+
+---
+
+## PART 5 — Test the live data pipeline
+
+**1.** Go back to your repo → click the **"Actions"** tab at the top
+
+**2.** You'll see **"Update War Feed"** in the left sidebar — click it
+
+**3.** On the right side click the grey **"Run workflow"** button → then the green **"Run workflow"** button
+
+**4.** A yellow circle appears — it's running. Takes about 60 seconds.
+
+**5.** It turns green ✓ = worked. Red ✗ = something failed.
+
+**6.** If green — go back to your repo, click the `data` folder, click `events.json` — you'll see it now has real news articles from Reuters, BBC, Al Jazeera
+
+**7.** Visit your site again — live events will be showing
+
+---
+
+## What your file structure should look like when done
+```
+debt-of-war/
+├── index.html
+├── fetch_events.py
+├── data/
+│   ├── events.json
+│   └── meta.json
+└── .github/
+    └── workflows/
+        └── update.yml
+```
+
+---
+
+## Your live URL will be
+```
+https://YOURUSERNAME.github.io/debt-of-war
